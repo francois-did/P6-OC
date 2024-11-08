@@ -1,21 +1,18 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// Définir le schéma de l'utilisateur
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema ({
   email: {
-    type: String,
-    required: true,
-    unique: true,
-    match: [/^\S+@\S+\.\S+$/, 'Email is invalid']
+    type: String, required: true, unique: true, match: [/^\S+@\S+\.\S+$/, 'Email is invalid']
   },
+
   password: {
-    type: String,
-    required: true
+    type: String, required: true
   }
+
 });
 
-// Hachage du mot de passe avant de sauvegarder
+// Middleware pour hacher le mot de passe avant de le sauvegarder
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
@@ -24,7 +21,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Comparer le mot de passe lors de la connexion
+
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
@@ -33,3 +30,7 @@ userSchema.methods.comparePassword = async function (password) {
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
+
+
+
+

@@ -2,7 +2,8 @@ const express = require('express');
 const { getAllBooks, createBook, updateBook, deleteBook, rateBook } = require('./controllers/bookController');
 const { signup, login, updateUser, deleteUser } = require('./controllers/userController');
 const jwt = require('jsonwebtoken');
-const upload = require('./imageUpload'); // Import Multer
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const router = express.Router();
 
@@ -21,20 +22,16 @@ function authenticateToken(req, res, next) {
 
 // Routes pour les livres
 router.get('/api/books', getAllBooks);
-router.post('/api/books', authenticateToken, createBook);
+router.post('/api/books', authenticateToken, upload.single('image'), createBook); 
 router.put('/api/books/:id', authenticateToken, updateBook);
 router.delete('/api/books/:id', authenticateToken, deleteBook);
 
-// Route pour l'upload d'image d'un livre
+// Route pour l'upload d'image d'un livre 
 router.post('/api/books/upload', authenticateToken, upload.single('image'), (req, res) => {
-    try {
-        res.status(201).json({
-            message: 'Image téléchargée avec succès!',
-            filePath: req.file.path
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.status(201).json({
+        message: 'Image téléchargée avec succès',
+        filePath: req.file.path
+    });
 });
 
 // Route pour noter un livre
