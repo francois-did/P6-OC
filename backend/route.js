@@ -69,7 +69,3 @@ router.delete('/api/books/:id', authenticateToken, deleteBook);
 router.post('/api/books/:id/rate', authenticateToken, rateBook);
 
 module.exports = router;
-
-
-
-

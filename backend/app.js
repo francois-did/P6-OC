@@ -72,8 +72,3 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads/images')));
 app.use('/', routes);
 
 module.exports = app;
-
-
-
-
-
