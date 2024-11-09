@@ -65,13 +65,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// Servir les fichiers statiques du dossier 'uploads'
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir les fichiers statiques du dossier 'uploads/images' à la racine
+app.use('/uploads', express.static(path.join(__dirname, '../uploads/images')));
 
 // Utiliser les routes
 app.use('/', routes);
 
 module.exports = app;
+
+
 
 
 

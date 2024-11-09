@@ -53,7 +53,7 @@ async function getAllBooks(req, res) {
 // Mettre à jour un livre
 async function updateBook(req, res) {
   try {
-    const bookData = req.body;
+    const bookData = JSON.parse(req.body.book);
     const { id } = req.params;
 
     // Recherche le livre par ID
