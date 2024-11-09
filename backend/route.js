@@ -5,7 +5,8 @@ const {
   updateBook,
   deleteBook,
   rateBook,
-  getBookById, // Nouvelle fonction ajoutée
+  getBookById,
+  getBooksByBestRating, // Ajout de la fonction spécifique
 } = require('./controllers/bookController');
 const {
   signup,
@@ -14,7 +15,7 @@ const {
   deleteUser,
 } = require('./controllers/userController');
 const authenticateToken = require('./middleware/authMiddleware');
-const upload = require('./middleware/imageUpload'); // Importer imageUpload du bon dossier
+const upload = require('./middleware/imageUpload');
 
 const router = express.Router();
 
@@ -25,8 +26,9 @@ router.put('/api/users/:id', authenticateToken, updateUser);
 router.delete('/api/users/:id', authenticateToken, deleteUser);
 
 // Routes pour les livres
-router.get('/api/books', getAllBooks);
-router.get('/api/books/:id', getBookById); // Route ajoutée pour obtenir un livre par ID
+router.get('/api/books/bestrating', getBooksByBestRating); // Route spécifique ajoutée
+router.get('/api/books', getAllBooks); // Route pour récupérer tous les livres
+router.get('/api/books/:id', getBookById); // Route pour récupérer un livre par ID
 router.post('/api/books', authenticateToken, upload.single('image'), createBook);
 router.put('/api/books/:id', authenticateToken, upload.single('image'), updateBook);
 router.delete('/api/books/:id', authenticateToken, deleteBook);

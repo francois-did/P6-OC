@@ -1,5 +1,63 @@
 const Book = require('../models/bookModel');
 
+// Récupérer tous les livres
+async function getAllBooks(req, res) {
+  try {
+    console.log("Requête reçue pour récupérer tous les livres."); // Log pour vérifier l'appel
+    const books = await Book.find(); // Récupère tous les livres de la collection
+
+    if (!books || books.length === 0) {
+      console.log("Aucun livre trouvé dans la base de données."); // Log si aucun livre
+      return res.status(404).json({ message: 'Aucun livre disponible.' });
+    }
+
+    console.log("Livres récupérés :", books); // Log des livres récupérés
+    res.status(200).json(books);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des livres :', error);
+    res.status(500).json({ error: 'Erreur interne du serveur.' });
+  }
+}
+
+// Récupérer un livre par ID
+async function getBookById(req, res) {
+  try {
+    const { id } = req.params;
+    console.log(`Requête reçue pour récupérer le livre avec l'ID : ${id}`);
+    const book = await Book.findById(id);
+
+    if (!book) {
+      console.log("Livre non trouvé pour l'ID :", id);
+      return res.status(404).json({ error: 'Livre non trouvé.' });
+    }
+
+    console.log("Livre récupéré :", book);
+    res.status(200).json(book);
+  } catch (error) {
+    console.error('Erreur lors de la récupération du livre :', error);
+    res.status(500).json({ error: 'Erreur interne du serveur.' });
+  }
+}
+
+// Récupérer les livres avec la meilleure note
+async function getBooksByBestRating(req, res) {
+  try {
+    console.log("Requête reçue pour les livres avec la meilleure note.");
+    const books = await Book.find().sort({ averageRating: -1 }).limit(5);
+
+    if (!books || books.length === 0) {
+      console.log("Aucun livre avec une note disponible.");
+      return res.status(404).json({ message: "Aucun livre trouvé." });
+    }
+
+    console.log("Livres avec la meilleure note :", books);
+    res.status(200).json(books);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des livres avec la meilleure note :", error);
+    res.status(500).json({ error: "Erreur interne du serveur." });
+  }
+}
+
 // Créer un nouveau livre
 async function createBook(req, res) {
   try {
@@ -27,37 +85,10 @@ async function createBook(req, res) {
     }
 
     const savedBook = await newBook.save();
+    console.log("Livre créé avec succès :", savedBook);
     res.status(201).json(savedBook);
   } catch (error) {
     console.error('Erreur lors de la création d\'un livre :', error);
-    res.status(500).json({ error: 'Erreur interne du serveur.' });
-  }
-}
-
-// Récupérer tous les livres
-async function getAllBooks(req, res) {
-  try {
-    const books = await Book.find();
-    res.status(200).json(books);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des livres :', error);
-    res.status(500).json({ error: 'Erreur interne du serveur.' });
-  }
-}
-
-// Récupérer un livre par ID
-async function getBookById(req, res) {
-  try {
-    const { id } = req.params;
-    const book = await Book.findById(id);
-
-    if (!book) {
-      return res.status(404).json({ error: 'Livre non trouvé.' });
-    }
-
-    res.status(200).json(book);
-  } catch (error) {
-    console.error('Erreur lors de la récupération du livre :', error);
     res.status(500).json({ error: 'Erreur interne du serveur.' });
   }
 }
@@ -83,6 +114,7 @@ async function updateBook(req, res) {
     }
 
     const updatedBook = await bookToUpdate.save();
+    console.log("Livre mis à jour :", updatedBook);
     res.status(200).json(updatedBook);
   } catch (error) {
     console.error('Erreur lors de la mise à jour du livre :', error);
@@ -100,6 +132,7 @@ async function deleteBook(req, res) {
       return res.status(404).json({ error: 'Livre non trouvé.' });
     }
 
+    console.log("Livre supprimé avec succès :", bookToDelete);
     res.status(204).send();
   } catch (error) {
     console.error('Erreur lors de la suppression du livre :', error);
@@ -133,6 +166,7 @@ async function rateBook(req, res) {
     book.averageRating = totalRatings / book.ratings.length;
 
     const updatedBook = await book.save();
+    console.log("Note ajoutée au livre :", updatedBook);
     res.status(200).json(updatedBook);
   } catch (error) {
     console.error('Erreur lors de l\'ajout d\'une note :', error);
@@ -143,7 +177,8 @@ async function rateBook(req, res) {
 module.exports = {
   createBook,
   getAllBooks,
-  getBookById, // Exportation de la nouvelle fonction
+  getBookById,
+  getBooksByBestRating,
   updateBook,
   deleteBook,
   rateBook,
