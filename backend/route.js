@@ -1,39 +1,38 @@
 const express = require('express');
-const {
-  getAllBooks,
-  createBook,
-  updateBook,
-  deleteBook,
-  rateBook,
-  getBookById,
-  getBooksByBestRating, // Ajout de la fonction spécifique
-} = require('./controllers/bookController');
-const {
-  signup,
-  login,
-  updateUser,
-  deleteUser,
-} = require('./controllers/userController');
+
+// Importation des fonctions du bookControllers
+const { getAllBooks, createBook, updateBook, deleteBook, rateBook, getBookById, getBooksByBestRating,} = require('./controllers/bookController');
+
+// Importation des fonctions du userControllers
+const { signup, login, updateUser, deleteUser,} = require('./controllers/userController');
+
+// Middleware d'authentification
 const authenticateToken = require('./middleware/authMiddleware');
-const upload = require('./middleware/imageUpload');
+
+// Middleware pour l'upload d'images
+const upload = require('./middleware/imageUpload')
 
 const router = express.Router();
 
 // Routes pour les utilisateurs
-router.post('/api/auth/signup', signup);
-router.post('/api/auth/login', login);
-router.put('/api/users/:id', authenticateToken, updateUser);
-router.delete('/api/users/:id', authenticateToken, deleteUser);
+router.post('/api/auth/signup', signup); // Route pour l'inscription
+router.post('/api/auth/login/', login); // Route pour la connexion
+router.put('/api/users/:id', authenticateToken, updateUser); // Route pour mettre à jour un user
+router.delete('/api/users/:id', authenticateToken, deleteUser); // Route pour supprimer un user
 
 // Routes pour les livres
-router.get('/api/books/bestrating', getBooksByBestRating); // Route spécifique ajoutée
-router.get('/api/books', getAllBooks); // Route pour récupérer tous les livres
-router.get('/api/books/:id', getBookById); // Route pour récupérer un livre par ID
-router.post('/api/books', authenticateToken, upload.single('image'), createBook);
-router.put('/api/books/:id', authenticateToken, upload.single('image'), updateBook);
-router.delete('/api/books/:id', authenticateToken, deleteBook);
+router.get('/api/books/bestrating', getBooksByBestRating) // Livres avec meilleurs notes
+router.get('/api/books', getAllBooks); // Récupérer tous les livres
+router.get('/api/books/:id', getBookById) // Récupérer un livre par son ID
+router.post('/api/books', authenticateToken, upload.single('image'), createBook); // Créer un livre
+router.put('/api/books/:id', authenticateToken, upload.single('image'), updateBook); // Mettre à jour un livre
+router.delete('/api/books/:id', authenticateToken, deleteBook) // Supprimer un livre
 
 // Routes pour noter un livre
-router.post('/api/books/:id/rate', authenticateToken, rateBook);
+router.post('/api/books/:id/rate', authenticateToken, rateBook)
 
 module.exports = router;
+
+  
+
+

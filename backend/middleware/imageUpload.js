@@ -3,24 +3,22 @@ const path = require('path');
 
 // Configuration de Multer
 const storage = multer.diskStorage({
+  // Définir le répertoire où les fichiers seront stockés
   destination: (req, file, cb) => {
     cb(null, path.join('uploads', 'images'));
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
+  
 });
 
+// Format acceptés
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
+  if (['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)) {
+    cb(null, true); // Fichier accepté
   } else {
-    cb(new Error('Format de fichier non pris en charge.'), false);
+    cb(new Error('Format de fichier non pris en charge.'), false); 
   }
 };
 
-const upload = multer({ storage, fileFilter });
+  const upload = multer({ storage, fileFilter });
 
 module.exports = upload;

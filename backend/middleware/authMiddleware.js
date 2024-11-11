@@ -2,9 +2,8 @@ const jwt = require('jsonwebtoken');
 
 // Middleware pour authentifier un utilisateur
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Récupérer le token à partir du header Authorization
-
+    const token = req.headers['authorization']?.split(' ')[1]; // Récupère le token directement avec l'opérateur "?."
+    
     if (!token) {
         return res.status(401).json({ message: 'Accès refusé. Aucun token fourni.' });
     }
@@ -19,3 +18,4 @@ function authenticateToken(req, res, next) {
 }
 
 module.exports = authenticateToken;
+

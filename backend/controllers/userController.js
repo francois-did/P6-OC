@@ -4,15 +4,9 @@ const User = require('../models/userModel'); // Modèle d'utilisateur
 // Inscription d'un utilisateur
 async function signup(req, res) {
   try {
-    const { email, password } = req.body;
-    const user = new User({ email, password });
-    const newUser = await user.save();
-
-    if (newUser) {
-      res.status(201).json({ message: 'Utilisateur créé avec succès' });
-    }
+    const newUser = await User.create(req.body); // Utilisation directe de `User.create`
+    res.status(201).json({ message: 'Utilisateur créé avec succès', userId: newUser._id });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur' });
   }
 }
@@ -20,14 +14,13 @@ async function signup(req, res) {
 // Connexion d'un utilisateur
 async function login(req, res) {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      return res.status(400).json({ message: 'Identifiants invalides' });
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await user.comparePassword(req.body.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Identifiants invalides' });
     }
@@ -35,7 +28,6 @@ async function login(req, res) {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ userId: user._id, token });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Erreur lors de la connexion' });
   }
 }
@@ -43,14 +35,10 @@ async function login(req, res) {
 // Mise à jour d'un utilisateur
 async function updateUser(req, res) {
   try {
-    const { id } = req.params;
-    const { email, password } = req.body;
-
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { email, password },
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (updatedUser) {
       res.json(updatedUser);
@@ -58,7 +46,6 @@ async function updateUser(req, res) {
       res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'utilisateur' });
   }
 }
@@ -66,17 +53,16 @@ async function updateUser(req, res) {
 // Suppression d'un utilisateur
 async function deleteUser(req, res) {
   try {
-    const { id } = req.params;
-    await User.findByIdAndDelete(id);
-    res.status(204).send();
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+
+    if (deletedUser) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Erreur lors de la suppression de l\'utilisateur' });
   }
 }
 
 module.exports = { signup, login, updateUser, deleteUser };
-
-
-
-
