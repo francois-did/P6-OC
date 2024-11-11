@@ -43,18 +43,38 @@ async function createBook(req, res) {
 
 // Mettre à jour un livre
 async function updateBook(req, res) {
-  const bookData = JSON.parse(req.body.book);
-  const bookToUpdate = await Book.findById(req.params.id);
-  if (!bookToUpdate) return res.status(404).json({ error: 'Livre non trouvé.' });
+  try {
+    let bookData;
 
-  Object.assign(bookToUpdate, bookData);
+    if (req.file) {
+      // Si un fichier est présent, on suppose que `req.body.book` est stringifié
+      if (!req.body.book) {
+        return res.status(400).json({ error: 'Les données du livre sont manquantes.' });
+      }
 
-  if (req.file) {
-    bookToUpdate.imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+      bookData = JSON.parse(req.body.book); // Parse les données stringifiées
+    } else {
+      // Si aucun fichier, on utilise directement req.body
+      bookData = req.body;
+    }
+
+    const bookToUpdate = await Book.findById(req.params.id);
+    if (!bookToUpdate) {
+      return res.status(404).json({ error: 'Livre non trouvé.' });
+    }
+
+    Object.assign(bookToUpdate, bookData);
+
+    if (req.file) {
+      bookToUpdate.imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
+    const updatedBook = await bookToUpdate.save();
+    res.status(200).json(updatedBook);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur lors de la mise à jour du livre.' });
   }
-
-  const updatedBook = await bookToUpdate.save();
-  res.status(200).json(updatedBook);
 }
 
 // Supprimer un livre
@@ -73,18 +93,28 @@ async function rateBook(req, res) {
     return res.status(400).json({ error: 'La note doit être entre 1 et 5.' });
   }
 
-  const book = await Book.findById(id);
-  if (!book) return res.status(404).json({ error: 'Livre non trouvé.' });
+  try {
+    const book = await Book.findById(id);
+    if (!book) return res.status(404).json({ error: 'Livre non trouvé.' });
 
-  if (book.ratings.some((rate) => rate.userId === userId)) {
-    return res.status(400).json({ error: 'Vous avez déjà noté ce livre.' });
+    // Vérifie si l'utilisateur a déjà noté ce livre
+    if (book.ratings.some((rate) => rate.userId.toString() === userId)) {
+      return res.status(400).json({ error: 'Vous avez déjà noté ce livre.' });
+    }
+
+    // Ajoute la note
+    book.ratings.push({ userId, grade: rating });
+
+    // Met à jour la note moyenne
+    book.averageRating =
+      book.ratings.reduce((acc, curr) => acc + curr.grade, 0) / book.ratings.length;
+
+    const updatedBook = await book.save();
+    res.status(200).json(updatedBook);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'ajout de la note.' });
   }
-
-  book.ratings.push({ userId, grade: rating });
-  book.averageRating = book.ratings.reduce((acc, curr) => acc + curr.grade, 0) / book.ratings.length;
-
-  const updatedBook = await book.save();
-  res.status(200).json(updatedBook);
 }
 
 module.exports = {
