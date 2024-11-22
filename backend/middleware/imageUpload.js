@@ -1,24 +1,46 @@
 const multer = require('multer');
+const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 
-// Configuration de Multer
-const storage = multer.diskStorage({
-  // Définir le répertoire où les fichiers seront stockés
-  destination: (req, file, cb) => {
-    cb(null, path.join('uploads', 'images'));
-  },
-  
-});
+const storage = multer.memoryStorage();
 
-// Format acceptés
 const fileFilter = (req, file, cb) => {
-  if (['image/jpeg', 'image/png', 'image/jpg'].includes(file.mimetype)) {
-    cb(null, true); // Fichier accepté
+  if (
+    ['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(
+      file.mimetype
+    )
+  ) {
+    cb(null, true);
   } else {
-    cb(new Error('Format de fichier non pris en charge.'), false); 
+    cb(new Error('Format de fichier non pris en charge'), false);
   }
 };
 
-  const upload = multer({ storage, fileFilter });
+const upload = multer({ storage, fileFilter });
 
-module.exports = upload;
+const processImage = async (req, res, next) => {
+  if (!req.file || !req.file.buffer) {
+    return next();
+  }
+
+  try {
+    const outputDir = path.join(__dirname, '..', 'uploads');
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+
+    const outputFilename = `${Date.now()}-${req.file.originalname.replace(
+      /[^a-zA-Z0-9]/g,
+      '_'
+    )}.webp`;
+    const outputPath = path.join(outputDir, outputFilename);
+
+    await sharp(req.file.buffer).resize(800).toFile(outputPath);
+
+    req.file.path = `/uploads/${outputFilename}`;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { upload, processImage };

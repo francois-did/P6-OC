@@ -29,7 +29,7 @@ router.put('/api/users/:id', authenticateToken, updateUser); // Route pour mettr
 router.delete('/api/users/:id', authenticateToken, deleteUser); // Route pour supprimer un user
 
 // Routes pour les livres
-router.get('/api/books/bestrating', getBooksByBestRating); // Livres avec meilleurs notes
+router.get('/api/books/bestrating', getBooksByBestRating); // Livres avec meilleures notes
 router.get('/api/books', getAllBooks); // Récupérer tous les livres
 router.get('/api/books/:id', getBookById); // Récupérer un livre par son ID
 router.post('/api/books', authenticateToken, upload.single('image'), createBook); // Créer un livre
@@ -37,6 +37,6 @@ router.put('/api/books/:id', authenticateToken, upload.single('image'), updateBo
 router.delete('/api/books/:id', authenticateToken, deleteBook); // Supprimer un livre
 
 // Routes pour noter un livre
-router.post('/api/books/:id/rating', authenticateToken, rateBook); // Change '/rate' en '/rating'
+router.post('/api/books/:id/rating', authenticateToken, rateBook);
 
 module.exports = router;
