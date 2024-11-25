@@ -57,7 +57,13 @@ async function createBook(req, res) {
 
     const newBook = new Book({ ...bookData, imageUrl });
     await newBook.save();
-    res.status(201).json(newBook);
+
+    const createdBook = {
+      ...newBook._doc,
+      imageUrl: `http://localhost:4000${newBook.imageUrl}`,
+    };
+
+    res.status(201).json(createdBook);
   } catch (err) {
     console.error('Erreur lors de la création du livre :', err);
     res.status(500).json({ message: 'Erreur lors de la création du livre' });
@@ -70,13 +76,25 @@ async function updateBook(req, res) {
     const book = await Book.findById(req.params.id);
     if (!book) return res.status(404).json({ message: 'Livre non trouvé' });
 
+    // Supprimer l'ancienne image si une nouvelle est fournie
     if (req.file && book.imageUrl) {
       deleteImage(book.imageUrl);
     }
 
-    Object.assign(book, req.body, { imageUrl: req.file ? `/uploads/${path.basename(req.file.path)}` : book.imageUrl });
+    // Mettre à jour le livre avec la nouvelle image ou conserver l'ancienne
+    Object.assign(book, req.body, {
+      imageUrl: req.file ? `/uploads/${path.basename(req.file.path)}` : book.imageUrl,
+    });
+
     await book.save();
-    res.status(200).json(book);
+
+    // Ajouter l'URL complète de l'image pour la réponse
+    const updatedBook = {
+      ...book._doc,
+      imageUrl: `http://localhost:4000${book.imageUrl}`,
+    };
+
+    res.status(200).json(updatedBook);
   } catch (err) {
     console.error('Erreur lors de la mise à jour du livre :', err);
     res.status(500).json({ message: 'Erreur lors de la mise à jour du livre' });
@@ -121,7 +139,12 @@ async function rateBook(req, res) {
       book.ratings.reduce((acc, curr) => acc + curr.grade, 0) / book.ratings.length;
     await book.save();
 
-    res.status(200).json(book);
+    const updatedBook = {
+      ...book._doc,
+      imageUrl: `http://localhost:4000${book.imageUrl}`,
+    };
+
+    res.status(200).json(updatedBook);
   } catch (err) {
     console.error("Erreur lors de l'ajout de la note :", err);
     res.status(500).json({ message: "Erreur lors de l'ajout de la note." });
@@ -132,7 +155,11 @@ async function rateBook(req, res) {
 async function getBooksByBestRating(req, res) {
   try {
     const books = await Book.find().sort({ averageRating: -1 }).limit(5);
-    res.status(200).json(books);
+    const booksWithFullImageUrl = books.map((book) => ({
+      ...book._doc,
+      imageUrl: `http://localhost:4000${book.imageUrl}`,
+    }));
+    res.status(200).json(booksWithFullImageUrl);
   } catch (err) {
     console.error('Erreur lors de la récupération des meilleures notes :', err);
     res.status(500).json({ message: 'Erreur lors de la récupération des meilleures notes' });

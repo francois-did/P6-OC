@@ -7,7 +7,7 @@ const {
   deleteBook,
   rateBook,
   getBooksByBestRating,
-} = require('../controllers/bookController'); // Assure-toi que ces fonctions existent
+} = require('../controllers/bookController'); 
 
 const authenticateToken = require('../middleware/authMiddleware');
 const { upload, processImage } = require('../middleware/imageUpload');
@@ -15,9 +15,9 @@ const { upload, processImage } = require('../middleware/imageUpload');
 const router = express.Router();
 
 // Routes pour les livres
-router.get('/bestrating', getBooksByBestRating); // Doit être une fonction existante
-router.get('/', getAllBooks); // Vérifie si getAllBooks est bien défini dans le contrôleur
-router.get('/:id', getBookById); // Idem
+router.get('/bestrating', getBooksByBestRating);
+router.get('/', getAllBooks); 
+router.get('/:id', getBookById); 
 router.post(
   '/',
   authenticateToken,
